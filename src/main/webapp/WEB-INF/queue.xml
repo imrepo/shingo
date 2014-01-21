@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<queue-entries>
+    <total-storage-limit>500M</total-storage-limit>
+    <queue>
+        <name>decision-queue</name>
+        <mode>pull</mode>
+    </queue>
+    <queue>
+        <name>task-queue</name>
+        <mode>pull</mode>
+    </queue>
+</queue-entries>
