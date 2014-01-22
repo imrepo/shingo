@@ -13,19 +13,25 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
- * Facade implements the logic behind the restful api.
+ * Facade implements the logic behind the restful api. It is designed to be easily testable
+ * without the complication of Oauth.
  */
 public class Facade {
 
   private static final Logger LOG = Logger.getLogger(Facade.class.getName());
 
   // Define Queue name constants
+  /*
+   * A queue of decision tasks, each representing a decision that needs to be made to control the
+   * workflow
+   */
   static final String DECISION_QUEUE_NAME = "decision-queue";
+  /*
+   * A queue of generic tasks, which in total comprise all the work pending or in process.
+   */
   static final String TASK_QUEUE_NAME = "task-queue";
 
-
   // WORKFLOW TYPE API
-
   /**
    * Registers a new kind of workflow with the system.
    * @param name            The name of the workflow type
@@ -36,18 +42,19 @@ public class Facade {
    *
    * @return
    */
-  public static Memo registerWorkflowType(String name, String version, String description,
+  public static GenericResponse registerWorkflowType(String name, String version,
+                                                    String description,
                                           int defaultTimeout) {
 
     WorkflowType workflowType = new WorkflowType(name, version, description, defaultTimeout);
     Datastore.saveWorkflowType(workflowType);
-    Memo memo = new Memo();
-    memo.putNote("name", workflowType.getName());
-    memo.putNote("version", workflowType.getVersion());
-    memo.putNote("description", workflowType.getDescription());
-    memo.putNote("status", workflowType.getStatus().name());
-    memo.putNote("timeout", "" + workflowType.getDefaultActivityTaskTimeout());
-    return memo;
+    GenericResponse response = new GenericResponse();
+    response.putNote("name", workflowType.getName());
+    response.putNote("version", workflowType.getVersion());
+    response.putNote("description", workflowType.getDescription());
+    response.putNote("status", workflowType.getStatus().name());
+    response.putNote("timeout", "" + workflowType.getDefaultActivityTaskTimeout());
+    return response;
   }
 
   public static WorkflowType deprecateWorkflowType(WorkflowType workflowType) {
@@ -57,7 +64,7 @@ public class Facade {
   }
 
   // WORKFLOW API
-  public static Response startWorkflow(String executionId, String typeName, String version,
+  public static GenericResponse startWorkflow(String executionId, String typeName, String version,
                                        String initiateExecutionDecision, Memo memo) {
     WorkflowType workflowType = Datastore.fetchWorkflowType(typeName, version);
     if(workflowType == null) {
@@ -65,7 +72,7 @@ public class Facade {
     }
     Execution execution = new Execution(workflowType, executionId, memo);
     if (execution.getWorkflowType().isDeprecated()) {
-      return new Response(); //TODO(ljw1001): Notify client that workflow is deprecated
+      return new GenericResponse(); //TODO(ljw1001): Notify client that workflow is deprecated
     }
     Decision decision = new Decision(initiateExecutionDecision, execution);
     execution.addNewEvent(EventType.WORKFLOW_STARTED, execution.getExecutionId());
@@ -77,43 +84,45 @@ public class Facade {
         .taskName(Long.toString(decision.getId()))
         .payload(execution.getExecutionId())
         .tag(decisionTag(typeName, version)));
-    return new Response();
+    return new GenericResponse();
   }
 
-  public static Response completeWorkflow(Decision decision) {
+  public static GenericResponse completeWorkflow(Decision decision) {
     Execution execution = decision.getExecution();
     execution.addNewEvent(EventType.DECISION_COMPLETED, decision.getName());
     execution.addNewEvent(EventType.WORKFLOW_COMPLETED, execution.getExecutionId());
     Datastore.saveExecution(execution);
-    return new Response();
+    return new GenericResponse();
   }
 
-  public static Response failWorkflow(Decision decision) {
+  public static GenericResponse failWorkflow(Decision decision) {
     Execution execution = decision.getExecution();
     execution.addNewEvent(EventType.DECISION_COMPLETED, decision.getName());
     execution.addNewEvent(EventType.WORKFLOW_FAILED, execution.toString());
     Datastore.saveExecution(execution);
-    return new Response();
+    return new GenericResponse();
   }
 
-  public static Response cancelWorkflow(Decision decision) {
+  public static GenericResponse cancelWorkflow(Decision decision) {
     Execution execution = decision.getExecution();
     execution.addNewEvent(EventType.DECISION_COMPLETED, decision.getName());
     execution.addNewEvent(EventType.WORKFLOW_CANCELED, execution.toString());
     Datastore.saveExecution(execution);
-    return new Response();
+    return new GenericResponse();
   }
 
   // DECISION API
-  public static Decision getDecision(String workflowTypeName, String version) {
-    List<TaskHandle> tasks =
-        decisionQueue().leaseTasksByTag(
+  public static GenericResponse getDecision(String workflowTypeName, String version) {
+    GenericResponse response = new GenericResponse();
+
+    List<TaskHandle> tasks = decisionQueue().leaseTasksByTag(
             1,
-            TimeUnit.SECONDS, 120,
+            TimeUnit.SECONDS,
+            120,
             decisionTag(workflowTypeName, version));
     if (tasks.isEmpty()) {
       LOG.info("No decision found in the decision queue");
-      return null;
+      return response;
     } else {
       Decision decision = Datastore.fetchDecision(Long.parseLong(tasks.get(0).getName()));
       if (decision == null) {
@@ -121,12 +130,14 @@ public class Facade {
       }
       Execution execution = decision.getExecution();
       execution.addNewEvent(EventType.DECISION_STARTED, decision.getName());
-      return decision;
+
+      response.setDecision(decision);
+      return response;
     }
   }
 
   // TASK API
-  public static Response scheduleTask(Task task, Decision decision) {
+  public static GenericResponse scheduleTask(Task task, Decision decision) {
 
     Execution execution = decision.getExecution();
     execution.addNewEvent(EventType.DECISION_COMPLETED, decision.getName());
@@ -148,10 +159,10 @@ public class Facade {
     // now add the event
     execution.addNewEvent(EventType.TASK_SCHEDULED, Long.toString(task.getId()));
     Datastore.saveExecution(execution);
-    return new Response();
+    return new GenericResponse();
   }
 
-  public static Response completeTask(Task task, String comment) {
+  public static GenericResponse completeTask(Task task, String message) {
     Execution execution = task.getExecution();
 
     //record the completed activity in the events list
@@ -163,7 +174,7 @@ public class Facade {
     addDecision(decision);
 
     execution.addNewEvent(EventType.DECISION_SCHEDULED, decision.toString());
-    return new Response();
+    return new GenericResponse();
   }
 
   public static Task getTask(String workflowTypeName, String workflowTypeVersion, String tag) {

@@ -22,7 +22,7 @@ public class TestUploadWorker implements Runnable {
 
       // Lets assume for testing that we did the annotation
       if (annotatedFileString != null) {
-        Facade.completeTask(task, "successful upload of vcf file");
+        Facade.completeTask(task, "Upload completed");
       } else {
         // TODO(ljw1001): throw an exception
         LOG.severe("Unable to find the output vcf file to upload in the execution memo");

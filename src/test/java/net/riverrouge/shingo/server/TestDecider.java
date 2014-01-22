@@ -3,6 +3,7 @@ package net.riverrouge.shingo.server;
 import static net.riverrouge.shingo.server.TestConstants.*;
 
 import net.riverrouge.shingo.server.api.Facade;
+import net.riverrouge.shingo.server.api.GenericResponse;
 import net.riverrouge.shingo.server.model.Decision;
 import net.riverrouge.shingo.server.model.Execution;
 import net.riverrouge.shingo.server.model.Task;
@@ -55,13 +56,17 @@ public class TestDecider implements Runnable {
     }
     // There were no handlers to make the necessary decision.  Fail.
     decision.getExecution().getMemo().putNote("workflow result",
-        "Workflow failed with Reason: no appropriate handler for this decision: " +
+        "Workflow failed with reason: no appropriate handler for this decision: " +
             decision.getName());
     Facade.failWorkflow(decision);
   }
 
   private Decision fetch(String workflowTypeName, String version) {
-    return Facade.getDecision(workflowTypeName, version);
+    GenericResponse response = Facade.getDecision(workflowTypeName, version);
+    if (response != null) {
+      return response.getDecision();
+    }
+    return null;
   }
 
   Decision handleDecision(String workflowTypeName, String version) {

@@ -24,22 +24,26 @@ public class Shingo {
 
   private static final Logger LOG = Logger.getLogger(Shingo.class.getName());
 
-
   // Decision API
   @ApiMethod(httpMethod = "get", path = "shingo/get_decision/authed")
-  public Decision getDecision(User user,
+  public GenericResponse getDecision(User user,
                               @Named("workflowTypeName") String workflowTypeName,
                               @Named("version") String version) {
 
-    Decision decision = new Decision();
-    return decision;
+    if (verifyUser(user)) {
+      return Facade.getDecision(workflowTypeName, version);
+    }
+    return forbidden();
   }
 
   @ApiMethod(name = "decision.scheduleTask", httpMethod = "post",
       path = "shingo/schedule_task/authed")
-  public Task scheduleTask(User user,
-                           Task task) {
-    return task;
+  public GenericResponse scheduleTask(User user, Task task, Decision decision) {
+
+    if (verifyUser(user)) {
+      return Facade.scheduleTask(task, decision);
+    }
+    return forbidden();
   }
 
   // Task API
@@ -52,17 +56,17 @@ public class Shingo {
   }
 
   @ApiMethod(name = "task.complete", httpMethod = "post", path = "shingo/complete_task/authed")
-  public Response completeTask(User user,
+  public GenericResponse completeTask(User user,
                                @Named("taskName") Long taskId) {
     Task newTask = Datastore.fetchTask(taskId);
-    return Facade.completeTask(newTask, "foo");
+    return Facade.completeTask(newTask, "done with something");
   }
 
   // WORKFLOW TYPE API
 
   @ApiMethod(name = "workflowtype.register", httpMethod = "post",
       path = "shingo/register_workflow/authed")
-  public Memo registerWorkflowType(User user,
+  public GenericResponse registerWorkflowType(User user,
                                    @Named("name") String name,
                                    @Named("version") String version,
                                    @Named("description") String description,
@@ -71,7 +75,7 @@ public class Shingo {
     if (verifyUser(user)) {
       return Facade.registerWorkflowType(name, version, description, defaultTimeout);
     }
-    return null;
+    return forbidden();
   }
 
   @ApiMethod(name = "workflowtype.deprecate", httpMethod = "post",
@@ -88,7 +92,7 @@ public class Shingo {
 
   @ApiMethod(name = "execution.start", httpMethod = "post",
       path = "shingo/start_execution/authed")
-  public Response startNewExecution(User user,
+  public GenericResponse startNewExecution(User user,
                                     @Named("executionId") String executionId,
                                     @Named("workflowTypeName") String typeName,
                                     @Named("version") String version,
@@ -102,25 +106,33 @@ public class Shingo {
 
   @ApiMethod(name = "execution.complete", httpMethod = "post",
       path = "shingo/complete_execution/authed")
-  public Response completeExecution(User user,
+  public GenericResponse completeExecution(User user,
                                     Decision decision) {
     return Facade.completeWorkflow(decision);
   }
 
   @ApiMethod(name = "execution.cancel", httpMethod = "post",
       path = "shingo/cancel_execution/authed")
-  public Response cancelExecution(User user,
+  public GenericResponse cancelExecution(User user,
                                   Decision decision) {
     return Facade.cancelWorkflow(decision);
   }
 
   @ApiMethod(name = "execution.fail", httpMethod = "post", path = "shingo/fail_execution/authed")
-  public Response failExecution(User user,
+  public GenericResponse failExecution(User user,
                                 Decision decision) {
     return Facade.failWorkflow(decision);
   }
 
   private boolean verifyUser(User user) {
     return true;
+  }
+
+  private GenericResponse forbidden() {
+    ErrorMessage error = new ErrorMessage("403", "Forbidden", "The client requested a resource " +
+        "for which it was not authorized");
+    GenericResponse response = new GenericResponse();
+    response.addErrorMessage(error);
+    return response;
   }
 }
