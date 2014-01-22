@@ -13,7 +13,6 @@ public class TestConstants {
   static final String UPLOAD_TASK_TAG = "Upload";
 
   // Decision name constants
-  static final String INITIATE_EXECUTION_DECISION = "initiate workflow";
   static final String ANNOTATION_COMPLETE_DECISION = "Annotation completed";
   static final String UPLOAD_COMPLETE_DECISION = "Upload completed";
 }

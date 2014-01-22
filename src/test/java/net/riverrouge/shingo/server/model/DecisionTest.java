@@ -6,10 +6,6 @@ import net.riverrouge.shingo.server.db.Datastore;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.appengine.tools.development.testing.LocalTaskQueueTestConfig;
-import net.riverrouge.shingo.server.model.Decision;
-import net.riverrouge.shingo.server.model.Execution;
-import net.riverrouge.shingo.server.model.Memo;
-import net.riverrouge.shingo.server.model.WorkflowType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,6 +61,6 @@ public class DecisionTest {
 
   @Test
   public void testGetExecution() throws Exception {
-    assertEquals(execution, decision.getExecution());
+    assertEquals(execution, decision.getWorkflow());
   }
 }

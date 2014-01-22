@@ -85,8 +85,7 @@ public class TestWorkflowClient {
     memo.putNote(noteKey, noteValue);
 
     // Start an execution of the new workflow type, passing in the identifying name and the memo
-    Facade.startWorkflow(EXECUTION_NAME, WORKFLOW_TYPE_NAME, WORKFLOW_TYPE_VERSION,
-        INITIATE_EXECUTION_DECISION, memo);
+    Facade.startWorkflow(EXECUTION_NAME, WORKFLOW_TYPE_NAME, WORKFLOW_TYPE_VERSION, memo);
 
     Execution execution = Datastore.fetchExecution(EXECUTION_NAME);
     assertNotNull(execution);

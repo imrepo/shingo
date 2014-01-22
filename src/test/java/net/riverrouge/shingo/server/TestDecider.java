@@ -6,7 +6,6 @@ import net.riverrouge.shingo.server.api.Facade;
 import net.riverrouge.shingo.server.api.GenericResponse;
 import net.riverrouge.shingo.server.model.Decision;
 import net.riverrouge.shingo.server.model.Execution;
-import net.riverrouge.shingo.server.model.Task;
 
 /**
  * Implements a test decider that polls for decisions that need to be made
@@ -32,19 +31,17 @@ public class TestDecider implements Runnable {
    */
   private void decide(Decision decision) {
 
-    Execution execution = decision.getExecution();
+    Execution execution = decision.getWorkflow();
 
-    if (decision.getName().equals(INITIATE_EXECUTION_DECISION)) {
+    if (decision.getName().equals("initiate workflow")) {
       // schedule an annotation task
-      Task annotationTask = new Task(ANNOTATION_TASK_TAG, execution);
-      Facade.scheduleTask(annotationTask, decision);
+      Facade.scheduleTask(ANNOTATION_TASK_TAG, decision);
       return;
     }
 
     if (decision.getName().equals(ANNOTATION_COMPLETE_DECISION)) {
       // schedule an upload task
-      Task uploadTask = new Task(UPLOAD_TASK_TAG, execution);
-      Facade.scheduleTask(uploadTask, decision);
+      Facade.scheduleTask(UPLOAD_TASK_TAG, decision);
       return;
     }
 
@@ -55,7 +52,7 @@ public class TestDecider implements Runnable {
       return;
     }
     // There were no handlers to make the necessary decision.  Fail.
-    decision.getExecution().getMemo().putNote("workflow result",
+    decision.getWorkflow().getMemo().putNote("workflow result",
         "Workflow failed with reason: no appropriate handler for this decision: " +
             decision.getName());
     Facade.failWorkflow(decision);

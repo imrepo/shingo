@@ -41,7 +41,7 @@ public class WorkflowType {
     this.status = WorkflowStatus.DEPRECATED;
   }
 
-  public boolean isDeprecated(){
+  public boolean isDeprecated() {
     return status == WorkflowStatus.DEPRECATED;
   }
 

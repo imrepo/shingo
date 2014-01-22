@@ -27,22 +27,23 @@ public class Shingo {
   public GenericResponse getDecision(User user,
                               @Named("workflowTypeName") String workflowTypeName,
                               @Named("version") String version) {
-
     if (verifyUser(user)) {
       return Facade.getDecision(workflowTypeName, version);
     }
     return forbidden();
   }
-/*
-  @ApiMethod(name = "decision.scheduleTask", httpMethod = "post",
-      path = "shingo/schedule_task/authed")
-  public GenericResponse scheduleTask(User user, Task task, Decision decision) {
 
+  @ApiMethod(name = "decision.scheduleTask",
+      httpMethod = "post",
+      path = "shingo/schedule_task/authed")
+  public GenericResponse scheduleTask(User user,
+                                      Decision decision,
+                                      @Named("taskType") String taskType) {
     if (verifyUser(user)) {
-      return Facade.scheduleTask(task, decision);
+      return Facade.scheduleTask(taskType, decision);
     }
     return forbidden();
-  }*/
+  }
 
   // Task API
   @ApiMethod(name = "task.getTask", httpMethod = "get", path = "shingo/get_task/authed")
@@ -102,8 +103,6 @@ public class Shingo {
                                     @Named("executionId") String executionId,
                                     @Named("workflowTypeName") String typeName,
                                     @Named("version") String version,
-                                    @Named("initiateExecutionDecision") String
-                                        initiateExecutionDecision,
                                     Memo memo) {
 
     LOG.fine("Handling start workflow request: " + typeName + " " + "version [" + executionId +"]");
@@ -111,7 +110,7 @@ public class Shingo {
     if (!verifyUser(user)) {
       return forbidden();
     }
-    return Facade.startWorkflow(executionId, typeName, version, initiateExecutionDecision, memo);
+    return Facade.startWorkflow(executionId, typeName, version, memo);
   }
 
   @ApiMethod(name = "execution.complete",

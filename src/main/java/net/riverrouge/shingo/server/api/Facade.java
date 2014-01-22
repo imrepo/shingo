@@ -57,6 +57,9 @@ public class Facade {
     return response;
   }
 
+  /**
+   * Marks the workflow identified by the given name and version as deprecated
+   */
   public static GenericResponse deprecateWorkflowType(String name, String version) {
     GenericResponse response = new GenericResponse();
     WorkflowType workflowType = Datastore.fetchWorkflowType(name, version);
@@ -66,8 +69,17 @@ public class Facade {
   }
 
   // WORKFLOW API
+
+  /**
+   * Starts a workflow execution of the given workflow type and version
+   * @param executionId                 A unique, client provided id for the execution
+   * @param typeName                    The name of the type of workflow to start
+   * @param version                     The version of the type of workflow to start
+   * @param memo
+   * @return
+   */
   public static GenericResponse startWorkflow(String executionId, String typeName, String version,
-                                       String initiateExecutionDecision, Memo memo) {
+                                        Memo memo) {
     WorkflowType workflowType = Datastore.fetchWorkflowType(typeName, version);
     if(workflowType == null) {
       LOG.severe("Unable to retrieve workflow type: " + typeName + " " + version);
@@ -76,7 +88,7 @@ public class Facade {
     if (execution.getWorkflowType().isDeprecated()) {
       return new GenericResponse(); //TODO(ljw1001): Notify client that workflow is deprecated
     }
-    Decision decision = new Decision(initiateExecutionDecision, execution);
+    Decision decision = new Decision("initiate workflow", execution);
     execution.addNewEvent(EventType.WORKFLOW_STARTED, execution.getExecutionId());
     Datastore.saveExecution(execution);
     Datastore.saveDecision(decision);
@@ -90,7 +102,7 @@ public class Facade {
   }
 
   public static GenericResponse completeWorkflow(Decision decision) {
-    Execution execution = decision.getExecution();
+    Execution execution = decision.getWorkflow();
     execution.addNewEvent(EventType.DECISION_COMPLETED, decision.getName());
     execution.addNewEvent(EventType.WORKFLOW_COMPLETED, execution.getExecutionId());
     Datastore.saveExecution(execution);
@@ -98,7 +110,7 @@ public class Facade {
   }
 
   public static GenericResponse failWorkflow(Decision decision) {
-    Execution execution = decision.getExecution();
+    Execution execution = decision.getWorkflow();
     execution.addNewEvent(EventType.DECISION_COMPLETED, decision.getName());
     execution.addNewEvent(EventType.WORKFLOW_FAILED, execution.toString());
     Datastore.saveExecution(execution);
@@ -106,7 +118,7 @@ public class Facade {
   }
 
   public static GenericResponse cancelWorkflow(Decision decision) {
-    Execution execution = decision.getExecution();
+    Execution execution = decision.getWorkflow();
     execution.addNewEvent(EventType.DECISION_COMPLETED, decision.getName());
     execution.addNewEvent(EventType.WORKFLOW_CANCELED, execution.toString());
     Datastore.saveExecution(execution);
@@ -130,7 +142,7 @@ public class Facade {
       if (decision == null) {
         LOG.info("Decision found in decision queue, but it is NOT in the datastore");
       }
-      Execution execution = decision.getExecution();
+      Execution execution = decision.getWorkflow();
       execution.addNewEvent(EventType.DECISION_STARTED, decision.getName());
 
       response.setDecision(decision);
@@ -139,13 +151,14 @@ public class Facade {
   }
 
   // TASK API
-  public static GenericResponse scheduleTask(Task task, Decision decision) {
+  public static GenericResponse scheduleTask(String taskType, Decision decision) {
 
     // Record the decision completed event
-    Execution execution = decision.getExecution();
+    Execution execution = decision.getWorkflow();
     execution.addNewEvent(EventType.DECISION_COMPLETED, decision.getName());
 
     //schedule the task
+    Task task = new Task(taskType, execution);
     WorkflowType workflowType = execution.getWorkflowType();
     String taskTag = taskTag(workflowType.getName(), workflowType.getVersion(),
         task.getTaskType());
@@ -217,7 +230,7 @@ public class Facade {
 
   private static void addDecision(Decision decision) {
     decisionQueue().add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL)
-        .payload(decision.getExecution().toString()) //TODO(ljw1001): FIX THIS LINE
+        .payload(decision.getWorkflow().toString()) //TODO(ljw1001): FIX THIS LINE
     );
   }
 

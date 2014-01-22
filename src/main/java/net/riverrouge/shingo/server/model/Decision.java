@@ -22,14 +22,14 @@ public class Decision {
 
   public Decision(String name, Execution execution) {
     this.name = name;
-    this.setExecution(execution);
+    this.setWorkflow(execution);
   }
 
   public String getName() {
     return name;
   }
 
-  public Execution getExecution() {
+  public Execution getWorkflow() {
     return execution.get();
   }
 
@@ -37,7 +37,7 @@ public class Decision {
     this.name = name;
   }
 
-  public void setExecution(Execution execution) {
+  public void setWorkflow(Execution execution) {
     this.execution = Ref.create(execution);
   }
 
@@ -54,7 +54,7 @@ public class Decision {
     return Objects.toStringHelper(this)
         .add("id", id)
         .add("name", name)
-        .add("execution", getExecution())
+        .add("execution", getWorkflow())
         .toString();
   }
 }

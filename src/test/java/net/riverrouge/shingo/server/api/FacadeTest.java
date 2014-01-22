@@ -58,14 +58,14 @@ public class FacadeTest {
   @Test
   public void testStartWorkflow() throws Exception {
     Facade.startWorkflow("12345", workflowType.getName(),
-        workflowType.getVersion(), INITIATE_EXECUTION_DECISION, new Memo());
+        workflowType.getVersion(), new Memo());
   }
 
   @Test
   public void testCompleteWorkflow() throws Exception {
     Execution execution = new Execution(workflowType, "2424", new Memo());
     Facade.startWorkflow("2424", workflowType.getName(),
-        workflowType.getVersion(), INITIATE_EXECUTION_DECISION, new Memo());
+        workflowType.getVersion(), new Memo());
     Decision decision = new Decision("Complete?", execution);
     Datastore.saveDecision(decision);
     Facade.completeWorkflow(decision);
