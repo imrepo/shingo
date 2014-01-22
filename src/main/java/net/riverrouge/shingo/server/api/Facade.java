@@ -49,11 +49,11 @@ public class Facade {
     WorkflowType workflowType = new WorkflowType(name, version, description, defaultTimeout);
     Datastore.saveWorkflowType(workflowType);
     GenericResponse response = new GenericResponse();
-    response.putNote("name", workflowType.getName());
-    response.putNote("version", workflowType.getVersion());
-    response.putNote("description", workflowType.getDescription());
-    response.putNote("status", workflowType.getStatus().name());
-    response.putNote("timeout", "" + workflowType.getDefaultActivityTaskTimeout());
+    response.putDetail("name", workflowType.getName());
+    response.putDetail("version", workflowType.getVersion());
+    response.putDetail("description", workflowType.getDescription());
+    response.putDetail("status", workflowType.getStatus().name());
+    response.putDetail("timeout", "" + workflowType.getDefaultActivityTaskTimeout());
     return response;
   }
 
@@ -141,15 +141,14 @@ public class Facade {
   // TASK API
   public static GenericResponse scheduleTask(Task task, Decision decision) {
 
+    // Record the decision completed event
     Execution execution = decision.getExecution();
     execution.addNewEvent(EventType.DECISION_COMPLETED, decision.getName());
-    WorkflowType workflowType = execution.getWorkflowType();
 
     //schedule the task
+    WorkflowType workflowType = execution.getWorkflowType();
     String taskTag = taskTag(workflowType.getName(), workflowType.getVersion(),
         task.getTaskType());
-    LOG.info("Task tag for new task is " + taskTag);
-
     Datastore.saveTask(task);
 
     taskQueue().add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL)
@@ -177,6 +176,7 @@ public class Facade {
     addDecision(decision);
 
     execution.addNewEvent(EventType.DECISION_SCHEDULED, decision.toString());
+    Datastore.saveExecution(execution);
     return new GenericResponse();
   }
 

@@ -1,8 +1,10 @@
 package net.riverrouge.shingo.server.api;
 
 /**
- *
+ * Represents an individual error message to be returned to the client. When possible the error
+ * code and message string should be consistent with HTTP error codes.
  */
+
 public class ErrorMessage {
   private String code;
   private String message;
@@ -36,5 +38,12 @@ public class ErrorMessage {
 
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  public static ErrorMessage forbidden() {
+    return new ErrorMessage(
+        "403",
+        "Forbidden",
+        "The client requested a resource or operation for which it was not authorized.");
   }
 }

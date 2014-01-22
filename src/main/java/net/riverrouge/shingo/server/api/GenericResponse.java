@@ -2,49 +2,65 @@ package net.riverrouge.shingo.server.api;
 
 import net.riverrouge.shingo.server.model.Decision;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- *
+ * A standard response to a workflow request from a client. It provides some information that is
+ * consistent across requests, but may also contain other information that is unique to the
+ * request type.
  */
 public class GenericResponse {
 
   private List<ErrorMessage> errors = new ArrayList<>();
-  private Date lastUpdate;
-  private Map<String, String> notes = new HashMap<>();
+  private Date creationTimestamp;
+  private Map<String, String> details = new HashMap<>();
   private Decision decision;
 
+  /**
+   * Constructs a generic response with a timestamp
+   */
   public GenericResponse() {
-    lastUpdate = new Date();
+    creationTimestamp = new Date();
   }
 
+  /**
+   * Returns {@code:true} if any errors were encountered. Clients should inspect the error(s) and
+   * decide what to do.
+   */
   public boolean hasErrors() {
     return !errors.isEmpty();
   }
 
-  public void putNote(String key, String value) {
-    notes.put(key, value);
-    lastUpdate = new Date();
+  /**
+   * Adds an annotation or 'note' to the response, in the form of a key-value pair
+   */
+  public void putDetail(String key, String value) {
+    details.put(key, value);
+    creationTimestamp = new Date();
   }
 
-  public String getNote(String key){
-    return notes.get(key);
+  public String getDetail(String key){
+    return details.get(key);
   }
 
-  public Date getLastUpdate() {
-    return lastUpdate;
+  public Date getCreationTimestamp() {
+    return creationTimestamp;
   }
 
-  public void setLastUpdate(Date lastUpdate) {
-    this.lastUpdate = lastUpdate;
+  public void setCreationTimestamp(Date creationTimestamp) {
+    this.creationTimestamp = creationTimestamp;
   }
 
-  public Map<String, String> getNotes() {
-    return notes;
+  public Map<String, String> getDetails() {
+    return details;
   }
 
-  public void setNotes(Map<String, String> notes) {
-    this.notes = notes;
+  public void setDetails(Map<String, String> details) {
+    this.details = details;
   }
 
   public void addErrorMessage(ErrorMessage error) {

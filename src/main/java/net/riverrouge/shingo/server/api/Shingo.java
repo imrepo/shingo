@@ -1,12 +1,10 @@
 package net.riverrouge.shingo.server.api;
-import net.riverrouge.shingo.server.db.Datastore;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.appengine.api.users.User;
 import net.riverrouge.shingo.server.model.Decision;
 import net.riverrouge.shingo.server.model.Memo;
 import net.riverrouge.shingo.server.model.Task;
-import net.riverrouge.shingo.server.model.WorkflowType;
 
 import javax.inject.Named;
 import java.util.logging.Logger;
@@ -35,7 +33,7 @@ public class Shingo {
     }
     return forbidden();
   }
-
+/*
   @ApiMethod(name = "decision.scheduleTask", httpMethod = "post",
       path = "shingo/schedule_task/authed")
   public GenericResponse scheduleTask(User user, Task task, Decision decision) {
@@ -44,7 +42,7 @@ public class Shingo {
       return Facade.scheduleTask(task, decision);
     }
     return forbidden();
-  }
+  }*/
 
   // Task API
   @ApiMethod(name = "task.getTask", httpMethod = "get", path = "shingo/get_task/authed")
@@ -150,11 +148,13 @@ public class Shingo {
     return true;
   }
 
+  /**
+   * Returns a GenericResponse containing an ErrorMessage that indicates that an authenticated
+   * user does not possess the rights for the operation requested.
+   */
   private GenericResponse forbidden() {
-    ErrorMessage error = new ErrorMessage("403", "Forbidden", "The client requested a resource " +
-        "for which it was not authorized");
     GenericResponse response = new GenericResponse();
-    response.addErrorMessage(error);
+    response.addErrorMessage(ErrorMessage.forbidden());
     return response;
   }
 }
