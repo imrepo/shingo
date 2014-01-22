@@ -29,7 +29,7 @@ public class TestAnnotationWorker implements Runnable {
      * annotated file.
      */
       task.getExecution().getMemo().putNote("output vcf file", "output_file_name.vcf");
-      Facade.completeTask(task, "successful annotation of vcf file");
+      Facade.completeTask(task.getId(), "successful annotation of vcf file");
     } else {
       LOG.info("No task found for annotation.");
     }

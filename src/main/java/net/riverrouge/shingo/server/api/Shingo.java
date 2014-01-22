@@ -55,16 +55,21 @@ public class Shingo {
     return Facade.getTask(workflowTypeName, version, tag);
   }
 
-  @ApiMethod(name = "task.complete", httpMethod = "post", path = "shingo/complete_task/authed")
+  @ApiMethod(name = "task.complete",
+      httpMethod = "post",
+      path = "shingo/complete_task/authed")
   public GenericResponse completeTask(User user,
                                @Named("taskName") Long taskId) {
-    Task newTask = Datastore.fetchTask(taskId);
-    return Facade.completeTask(newTask, "done with something");
+    if (!verifyUser(user)) {
+      return forbidden();
+    }
+    return Facade.completeTask(taskId, "Completed some task");
   }
 
   // WORKFLOW TYPE API
 
-  @ApiMethod(name = "workflowtype.register", httpMethod = "post",
+  @ApiMethod(name = "workflowtype.register",
+      httpMethod = "post",
       path = "shingo/register_workflow/authed")
   public GenericResponse registerWorkflowType(User user,
                                    @Named("name") String name,
@@ -72,20 +77,23 @@ public class Shingo {
                                    @Named("description") String description,
                                    @Named("defaultActivityTimeout") int defaultTimeout) {
     LOG.fine("Received workflow type registration request");
-    if (verifyUser(user)) {
-      return Facade.registerWorkflowType(name, version, description, defaultTimeout);
+    if (!verifyUser(user)) {
+      return forbidden();
     }
-    return forbidden();
+    return Facade.registerWorkflowType(name, version, description, defaultTimeout);
   }
 
-  @ApiMethod(name = "workflowtype.deprecate", httpMethod = "post",
+  @ApiMethod(name = "workflowtype.deprecate",
+      httpMethod = "post",
       path = "shingo/deprecate_workflow/authed")
-  public WorkflowType deprecateWorkflowType(User user,
+  public GenericResponse deprecateWorkflowType(User user,
                                             @Named("name") String name,
                                             @Named("version") String version) {
-
-    WorkflowType workflowType = Datastore.fetchWorkflowType(name, version);
-    return Facade.deprecateWorkflowType(workflowType);
+    LOG.fine("Received workflow type deprecation request");
+    if (!verifyUser(user)) {
+      return forbidden();
+    }
+    return Facade.deprecateWorkflowType(name, version);
   }
 
   // WORKFLOW API
@@ -101,26 +109,40 @@ public class Shingo {
                                     Memo memo) {
 
     LOG.fine("Handling start workflow request: " + typeName + " " + "version [" + executionId +"]");
+
+    if (!verifyUser(user)) {
+      return forbidden();
+    }
     return Facade.startWorkflow(executionId, typeName, version, initiateExecutionDecision, memo);
   }
 
-  @ApiMethod(name = "execution.complete", httpMethod = "post",
+  @ApiMethod(name = "execution.complete",
+      httpMethod = "post",
       path = "shingo/complete_execution/authed")
-  public GenericResponse completeExecution(User user,
-                                    Decision decision) {
+  public GenericResponse completeExecution(User user, Decision decision) {
+    if (!verifyUser(user)) {
+      return forbidden();
+    }
     return Facade.completeWorkflow(decision);
   }
 
-  @ApiMethod(name = "execution.cancel", httpMethod = "post",
+  @ApiMethod(name = "execution.cancel",
+      httpMethod = "post",
       path = "shingo/cancel_execution/authed")
-  public GenericResponse cancelExecution(User user,
-                                  Decision decision) {
-    return Facade.cancelWorkflow(decision);
+  public GenericResponse cancelExecution(User user, Decision decision) {
+    if (!verifyUser(user)) {
+      return Facade.cancelWorkflow(decision);
+    }
+    return forbidden();
   }
 
-  @ApiMethod(name = "execution.fail", httpMethod = "post", path = "shingo/fail_execution/authed")
-  public GenericResponse failExecution(User user,
-                                Decision decision) {
+  @ApiMethod(name = "execution.fail",
+      httpMethod = "post",
+      path = "shingo/fail_execution/authed")
+  public GenericResponse failExecution(User user, Decision decision) {
+    if (!verifyUser(user)) {
+      return forbidden();
+    }
     return Facade.failWorkflow(decision);
   }
 

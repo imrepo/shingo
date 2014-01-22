@@ -57,10 +57,12 @@ public class Facade {
     return response;
   }
 
-  public static WorkflowType deprecateWorkflowType(WorkflowType workflowType) {
+  public static GenericResponse deprecateWorkflowType(String name, String version) {
+    GenericResponse response = new GenericResponse();
+    WorkflowType workflowType = Datastore.fetchWorkflowType(name, version);
     workflowType.deprecate();
     Datastore.saveWorkflowType(workflowType);
-    return workflowType;
+    return response;
   }
 
   // WORKFLOW API
@@ -162,7 +164,8 @@ public class Facade {
     return new GenericResponse();
   }
 
-  public static GenericResponse completeTask(Task task, String message) {
+  public static GenericResponse completeTask(Long taskId, String message) {
+    Task task = Datastore.fetchTask(taskId);
     Execution execution = task.getExecution();
 
     //record the completed activity in the events list

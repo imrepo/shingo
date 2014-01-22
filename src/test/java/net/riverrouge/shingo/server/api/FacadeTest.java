@@ -49,8 +49,10 @@ public class FacadeTest {
 
   @Test
   public void testDeprecateWorkflowType() throws Exception {
-    WorkflowType workflowType1 = Facade.deprecateWorkflowType(workflowType);
-    assertTrue(workflowType1.isDeprecated());
+    GenericResponse response =
+        Facade.deprecateWorkflowType(workflowType.getName(), workflowType.getVersion());
+    // Todo(ljw1001): Add the workflow type data to the response using notes
+    // assertTrue(workflowType1.isDeprecated());
   }
 
   @Test

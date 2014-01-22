@@ -80,13 +80,12 @@ public class ShingoTest {
 
   @Test
   public void testDeprecateWorkflowType() throws Exception {
-    WorkflowType workflowType1 =
+    GenericResponse genericResponse =
         api.deprecateWorkflowType(null, workflowType.getName(), workflowType.getVersion());
 
     WorkflowType fromDB = Datastore.fetchWorkflowType(workflowType.getName(),
         workflowType.getVersion());
     assertTrue(fromDB.isDeprecated());
-    assertTrue(workflowType1.isDeprecated());
   }
 
   @Test
