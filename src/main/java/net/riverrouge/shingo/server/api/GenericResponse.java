@@ -40,9 +40,11 @@ public class GenericResponse {
    */
   public void putDetail(String key, String value) {
     details.put(key, value);
-    creationTimestamp = new Date();
   }
 
+  /**
+   * Returns the details value associated with the given key. May return {@code:null}.
+   */
   public String getDetail(String key){
     return details.get(key);
   }

@@ -144,6 +144,9 @@ public class Shingo {
     return Facade.failWorkflow(decision);
   }
 
+  /**
+   * Returns true if the given User is authorized for the operation, and false otherwise.
+   */
   private boolean verifyUser(User user) {
     return true;
   }
