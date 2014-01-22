@@ -47,7 +47,7 @@ public class Shingo {
 
   // Task API
   @ApiMethod(name = "task.getTask", httpMethod = "get", path = "shingo/get_task/authed")
-  public Task getTask(User user,
+  public GenericResponse getTask(User user,
                       @Named("workflowTypeName") String workflowTypeName,
                       @Named("version") String version,
                       @Named("tag") String tag) {
@@ -62,7 +62,7 @@ public class Shingo {
     if (!verifyUser(user)) {
       return forbidden();
     }
-    return Facade.completeTask(taskId, "Completed some task");
+    return Facade.completeTask(taskId);
   }
 
   // WORKFLOW TYPE API

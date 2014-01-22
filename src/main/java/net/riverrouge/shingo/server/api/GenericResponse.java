@@ -1,6 +1,7 @@
 package net.riverrouge.shingo.server.api;
 
 import net.riverrouge.shingo.server.model.Decision;
+import net.riverrouge.shingo.server.model.Task;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,6 +20,7 @@ public class GenericResponse {
   private Date creationTimestamp;
   private Map<String, String> details = new HashMap<>();
   private Decision decision;
+  private Task task;
 
   /**
    * Constructs a generic response with a timestamp
@@ -79,5 +81,13 @@ public class GenericResponse {
 
   public void setDecision(Decision decision) {
     this.decision = decision;
+  }
+
+  public Task getTask() {
+    return task;
+  }
+
+  public void setTask(Task task) {
+    this.task = task;
   }
 }

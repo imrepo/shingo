@@ -1,6 +1,9 @@
 package net.riverrouge.shingo.server;
 
+import static net.riverrouge.shingo.server.TestConstants.*;
+
 import net.riverrouge.shingo.server.api.Facade;
+import net.riverrouge.shingo.server.api.GenericResponse;
 import net.riverrouge.shingo.server.model.Task;
 
 import java.util.logging.Logger;
@@ -14,7 +17,11 @@ public class TestUploadWorker implements Runnable {
 
   void handleWork() {
 
-    Task task = Facade.getTask(TestConstants.WORKFLOW_TYPE_NAME, TestConstants.WORKFLOW_TYPE_VERSION, TestConstants.UPLOAD_TASK_TAG);
+    GenericResponse response =
+        Facade.getTask(WORKFLOW_TYPE_NAME,  WORKFLOW_TYPE_VERSION, UPLOAD_TASK_TAG);
+
+    Task task = response.getTask();
+
     if (task != null) {
       LOG.info("Handling upload.");
 
@@ -22,7 +29,7 @@ public class TestUploadWorker implements Runnable {
 
       // Lets assume for testing that we did the annotation
       if (annotatedFileString != null) {
-        Facade.completeTask(task.getId(), "Upload completed");
+        Facade.completeTask(task.getId());
       } else {
         // TODO(ljw1001): throw an exception
         LOG.severe("Unable to find the output vcf file to upload in the execution memo");

@@ -7,7 +7,6 @@ import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import net.riverrouge.shingo.server.model.*;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -40,7 +39,7 @@ public class Facade {
    * @param defaultTimeout  The default number of seconds that a given task can run before we
    *                        timeout the lease on the task, and try again.
    *
-   * @return
+   * @return A generic response annotated with details about the new workflow type
    */
   public static GenericResponse registerWorkflowType(String name, String version,
                                                     String description,
@@ -75,19 +74,29 @@ public class Facade {
    * @param executionId                 A unique, client provided id for the execution
    * @param typeName                    The name of the type of workflow to start
    * @param version                     The version of the type of workflow to start
-   * @param memo
-   * @return
+   * @param memo                        A memo object containing data for use later in the flow
+   * @return A generic response object indicating success or containing one or more errors
    */
   public static GenericResponse startWorkflow(String executionId, String typeName, String version,
                                         Memo memo) {
+    GenericResponse response = new GenericResponse();
     WorkflowType workflowType = Datastore.fetchWorkflowType(typeName, version);
     if(workflowType == null) {
       LOG.severe("Unable to retrieve workflow type: " + typeName + " " + version);
+      ErrorMessage message = new ErrorMessage("404", "Not Found", "There is no workflow type with" +
+          " the given name and version number.");
+      response.addErrorMessage(message);
+      return response;
     }
+    if (workflowType.isDeprecated()) {
+      LOG.severe("Deprecated workflow: " + typeName + " " + version + " was requested.");
+      ErrorMessage message = new ErrorMessage("422", "Unprocessable Entity",
+          "The workflow type and version requested has been deprecated.");
+      response.addErrorMessage(message);
+      return response;
+    }
+    // Todo(ljw1001): Add exception handling for non unique execution ids
     Execution execution = new Execution(workflowType, executionId, memo);
-    if (execution.getWorkflowType().isDeprecated()) {
-      return new GenericResponse(); //TODO(ljw1001): Notify client that workflow is deprecated
-    }
     Decision decision = new Decision("initiate workflow", execution);
     execution.addNewEvent(EventType.WORKFLOW_STARTED, execution.getExecutionId());
     Datastore.saveExecution(execution);
@@ -98,7 +107,9 @@ public class Facade {
         .taskName(Long.toString(decision.getId()))
         .payload(execution.getExecutionId())
         .tag(decisionTag(typeName, version)));
-    return new GenericResponse();
+    response.putDetail("action", "start workflow");
+    response.putDetail("result", "success");
+    return response;
   }
 
   public static GenericResponse completeWorkflow(Decision decision) {
@@ -141,11 +152,12 @@ public class Facade {
       Decision decision = Datastore.fetchDecision(Long.parseLong(tasks.get(0).getName()));
       if (decision == null) {
         LOG.info("Decision found in decision queue, but it is NOT in the datastore");
+      } else {
+        Execution execution = decision.getWorkflow();
+        execution.addNewEvent(EventType.DECISION_STARTED, decision.getName());
+        response.setDecision(decision);
+        Datastore.saveExecution(execution);
       }
-      Execution execution = decision.getWorkflow();
-      execution.addNewEvent(EventType.DECISION_STARTED, decision.getName());
-
-      response.setDecision(decision);
       return response;
     }
   }
@@ -176,7 +188,13 @@ public class Facade {
     return new GenericResponse();
   }
 
-  public static GenericResponse completeTask(Long taskId, String message) {
+  /**
+   * Marks the task identifed by the given Id as completed, and queues a decision about what to
+   * do next
+   */
+  public static GenericResponse completeTask(Long taskId) {
+
+    GenericResponse response = new GenericResponse();
     Task task = Datastore.fetchTask(taskId);
     Execution execution = task.getExecution();
 
@@ -190,10 +208,14 @@ public class Facade {
 
     execution.addNewEvent(EventType.DECISION_SCHEDULED, decision.toString());
     Datastore.saveExecution(execution);
-    return new GenericResponse();
+    response.putDetail("action", "start workflow");
+    response.putDetail("result", "success");
+
+    return response;
   }
 
-  public static Task getTask(String workflowTypeName, String workflowTypeVersion, String tag) {
+  public static GenericResponse getTask(String workflowTypeName, String workflowTypeVersion, String tag) {
+    GenericResponse response = new GenericResponse();
     String taskTag = taskTag(workflowTypeName, workflowTypeVersion, tag);
     List<TaskHandle> tasks =
         taskQueue().leaseTasksByTag(
@@ -202,30 +224,14 @@ public class Facade {
             taskTag);
     if (tasks.isEmpty()) {
       LOG.info("No tasks in queue found that match the tag " + taskTag);
-
-      List<TaskHandle> all = taskQueue().leaseTasks(100, TimeUnit.SECONDS, 300);
-      try {
-        if (all.get(0).getTag().equals(taskTag)) {
-          LOG.severe("Match");
-        }
-        else {
-          LOG.severe("NO MATCH");
-        }
-        for (TaskHandle task: all) {
-          LOG.info(task.toString());
-        }
-      } catch (UnsupportedEncodingException e) {
-        LOG.severe(e.getMessage());
-      }
-      return null;
     } else {
       TaskHandle taskHandle = tasks.get(0);
       LOG.info("The taskhandle found is " + taskHandle.toString());
       Task task = Datastore.fetchTask(Long.parseLong(taskHandle.getName()));
       Execution execution = task.getExecution();
       execution.addNewEvent(EventType.TASK_STARTED, task.toString());
-      return task;
     }
+    return response;
   }
 
   private static void addDecision(Decision decision) {

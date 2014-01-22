@@ -1,6 +1,9 @@
 package net.riverrouge.shingo.server;
 
+import static net.riverrouge.shingo.server.TestConstants.*;
+
 import net.riverrouge.shingo.server.api.Facade;
+import net.riverrouge.shingo.server.api.GenericResponse;
 import net.riverrouge.shingo.server.model.Task;
 
 import java.util.logging.Logger;
@@ -14,8 +17,10 @@ public class TestAnnotationWorker implements Runnable {
 
   void handleWork() {
 
-    Task task = Facade.getTask(TestConstants.WORKFLOW_TYPE_NAME, TestConstants.WORKFLOW_TYPE_VERSION, TestConstants.ANNOTATION_TASK_TAG);
+    GenericResponse response =
+        Facade.getTask(WORKFLOW_TYPE_NAME,  WORKFLOW_TYPE_VERSION, ANNOTATION_TASK_TAG);
 
+    Task task = response.getTask();
     if (task != null) {
 
       // For demonstration purposes, get the location of the file to annotate"
@@ -29,7 +34,7 @@ public class TestAnnotationWorker implements Runnable {
      * annotated file.
      */
       task.getExecution().getMemo().putNote("output vcf file", "output_file_name.vcf");
-      Facade.completeTask(task.getId(), "successful annotation of vcf file");
+      Facade.completeTask(task.getId());
     } else {
       LOG.info("No task found for annotation.");
     }
