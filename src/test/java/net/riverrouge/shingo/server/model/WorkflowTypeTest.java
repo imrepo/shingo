@@ -2,8 +2,6 @@ package net.riverrouge.shingo.server.model;
 
 import static org.junit.Assert.*;
 
-import net.riverrouge.shingo.server.model.WorkflowStatus;
-import net.riverrouge.shingo.server.model.WorkflowType;
 import org.junit.Test;
 
 import java.util.Date;
@@ -62,19 +60,15 @@ public class WorkflowTypeTest {
   }
 
   @Test
-  public void testSetCreationDate() {
+  public void testGetCreationDate() {
     Date creationDate = workflowType.getCreationDate();
-    Date newDate = new Date(creationDate.getTime() + 100000);
-    workflowType.setCreationDate(newDate);
-    assertEquals(newDate, workflowType.getCreationDate());
+    assertNotNull(creationDate);
   }
 
   @Test
-  public void testSetDeprecationDate() {
+  public void testGetDeprecationDate() {
     assertEquals(null, workflowType.getDeprecationDate());
-    Date now = new Date();
-    workflowType.setDeprecationDate(now);
-    assertEquals(now, workflowType.getDeprecationDate());
+    assertNotNull(workflowType.getDeprecationDate());
   }
 
   @Test
@@ -88,13 +82,5 @@ public class WorkflowTypeTest {
     Long newId = 1331313l;
     workflowType.setId(newId);
     assertEquals(newId, workflowType.getId());
-  }
-
-  @Test
-  public void testEquals()  {
-    WorkflowType workflowType2 = new WorkflowType(name, version, description, timeout);
-    workflowType2.setCreationDate(workflowType.getCreationDate());
-    workflowType2.setId(workflowType.getId());
-    assertEquals(workflowType2, workflowType);
   }
 }

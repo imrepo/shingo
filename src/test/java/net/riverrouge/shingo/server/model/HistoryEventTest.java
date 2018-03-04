@@ -1,13 +1,12 @@
 package net.riverrouge.shingo.server.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import net.riverrouge.shingo.server.model.EventType;
 import net.riverrouge.shingo.server.model.HistoryEvent;
 import org.junit.Test;
 
 import java.util.Date;
+
+import static org.junit.Assert.*;
 
 /**
  * Tests for HistoryEvent
@@ -20,17 +19,12 @@ public class HistoryEventTest {
   @Test
   public void testGetEventType() {
     assertEquals(EventType.TASK_COMPLETED, event.getEventType());
-    event.setEventType(EventType.WORKFLOW_STARTED);
-    assertEquals(EventType.WORKFLOW_STARTED, event.getEventType());
   }
 
   @Test
   public void testGetTimestamp() {
     Date oldTimestamp = event.getTimestamp();
-    Date newTimestamp = new Date(oldTimestamp.getTime() + 100000);
-    assertFalse(newTimestamp.equals(event.getTimestamp()));
-    event.setTimestamp(newTimestamp);
-    assertEquals(newTimestamp, event.getTimestamp());
+    assertNotNull(oldTimestamp);
   }
 
   @Test

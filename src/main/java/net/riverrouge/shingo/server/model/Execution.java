@@ -26,7 +26,7 @@ public class Execution {
   public Execution(){}
 
   public Execution(WorkflowType workflowType, String executionId, Memo memo) {
-    this.setWorkflowType(workflowType);
+    this.workflowType =  Ref.create(workflowType);
     this.executionId = executionId;
     this.memo = memo;
   }
@@ -52,14 +52,6 @@ public class Execution {
 
   public void setWorkflowType(WorkflowType workflowType) {
     this.workflowType = Ref.create(workflowType);
-  }
-
-  public void setExecutionId(String executionId) {
-    this.executionId = executionId;
-  }
-
-  public void setEvents(List<HistoryEvent> events) {
-    this.events = events;
   }
 
   public void setMemo(Memo memo) {

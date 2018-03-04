@@ -24,11 +24,11 @@ public class Facade {
    * A queue of decision tasks, each representing a decision that needs to be made to control the
    * workflow
    */
-  static final String DECISION_QUEUE_NAME = "decision-queue";
+  private static final String DECISION_QUEUE_NAME = "decision-queue";
   /*
    * A queue of generic tasks, which in total comprise all the work pending or in process.
    */
-  static final String TASK_QUEUE_NAME = "task-queue";
+  private static final String TASK_QUEUE_NAME = "task-queue";
 
   // WORKFLOW TYPE API
   /**

@@ -5,13 +5,9 @@ import static org.junit.Assert.*;
 import net.riverrouge.shingo.server.db.Datastore;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
-import net.riverrouge.shingo.server.model.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Tests for Execution
@@ -61,23 +57,15 @@ public class ExecutionTest {
   }
 
   @Test
-  public void testSetGetExecutionId() {
+  public void testGetExecutionId() {
     assertEquals(executionId, execution.getExecutionId());
-    String newExecutionId = "NEW ID";
-    assertFalse(newExecutionId.equals(execution.getExecutionId()));
-    execution.setExecutionId(newExecutionId);
-    assertEquals(newExecutionId, execution.getExecutionId());
   }
 
   @Test
-  public void testSetGetEvents() {
-    List<HistoryEvent> events = new ArrayList<>();
-    HistoryEvent event = new HistoryEvent(EventType.DECISION_FAILED, "failed");
-    events.add(event);
+  public void testGetEvents() {
     assertTrue(execution.getEvents().isEmpty());
-    execution.setEvents(events);
+    execution.addNewEvent(EventType.DECISION_FAILED, "failed");
     assertFalse(execution.getEvents().isEmpty());
-    assertEquals(event, execution.getEvents().get(0));
   }
 
   @Test

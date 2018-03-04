@@ -22,7 +22,7 @@ public class Decision {
 
   public Decision(String name, Execution execution) {
     this.name = name;
-    this.setWorkflow(execution);
+    this.execution = Ref.create(execution);
   }
 
   public String getName() {
@@ -35,10 +35,6 @@ public class Decision {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  public void setWorkflow(Execution execution) {
-    this.execution = Ref.create(execution);
   }
 
   public Long getId() {

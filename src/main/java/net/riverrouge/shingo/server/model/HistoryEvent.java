@@ -28,16 +28,8 @@ public class HistoryEvent {
     return eventType;
   }
 
-  public void setEventType(EventType eventType) {
-    this.eventType = eventType;
-  }
-
   public Date getTimestamp() {
     return timestamp;
-  }
-
-  public void setTimestamp(Date timestamp) {
-    this.timestamp = timestamp;
   }
 
   public String getLabel() {

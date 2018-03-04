@@ -4,6 +4,7 @@ package net.riverrouge.shingo.server.model;
  * The types of events that we record in the event history
  */
 public enum EventType {
+
   DECISION_STARTED,
   DECISION_COMPLETED,
   DECISION_FAILED,

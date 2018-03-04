@@ -22,8 +22,9 @@ public class TaskTest {
   private final String description = "Simple annotation and persistence of a vcf";
   private final int timeout = 3600;
   private WorkflowType workflowType = new WorkflowType(name, version, description, timeout);
+  private Execution execution = new Execution(workflowType, "12345", new Memo());
 
-  private final Task task = new Task();
+  private final Task task = new Task("Upload file", execution);
 
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
@@ -49,7 +50,6 @@ public class TaskTest {
   @Test
   public void testGetTaskType() {
     assertTrue(task.getTaskType() == null);
-    task.setTaskType("Upload file");
     assertEquals("Upload file", task.getTaskType());
   }
 

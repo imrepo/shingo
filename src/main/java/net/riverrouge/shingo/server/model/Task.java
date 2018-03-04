@@ -16,7 +16,7 @@ public class Task {
   private String taskType;
   private Ref<Execution> execution;
 
-  public Task(){}
+  public Task() {}
 
   public Task(String taskType, Execution execution) {
     this.taskType = taskType;
@@ -33,10 +33,6 @@ public class Task {
 
   public String getTaskType() {
     return taskType;
-  }
-
-  public void setTaskType(String taskType) {
-    this.taskType = taskType;
   }
 
   public Execution getExecution() {

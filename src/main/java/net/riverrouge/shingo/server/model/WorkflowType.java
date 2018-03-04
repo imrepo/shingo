@@ -81,16 +81,8 @@ public class WorkflowType {
     return creationDate;
   }
 
-  public void setCreationDate(Date creationDate) {
-    this.creationDate = creationDate;
-  }
-
   public Date getDeprecationDate() {
     return deprecationDate;
-  }
-
-  public void setDeprecationDate(Date deprecationDate) {
-    this.deprecationDate = deprecationDate;
   }
 
   public int getDefaultActivityTaskTimeout() {
