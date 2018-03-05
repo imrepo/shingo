@@ -14,7 +14,7 @@ import org.junit.Test;
 /**
  *
  */
-public class ShingoTest {
+public class OhnoTest {
 
   private final WorkflowType workflowType = new WorkflowType("Variant pipeline", "V1",
       "Annotates variants and stores them", 3600);
